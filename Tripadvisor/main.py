@@ -90,6 +90,7 @@ def analisi(query="",url=""):
                 save()
 
 
+
 # Funzione utilizzata nel caso lo script venga interrotto con CTRL+C.
 def save(name="Tripadvisor"):
     global tot_reviews,wb,driver
