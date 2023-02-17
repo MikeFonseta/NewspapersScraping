@@ -13,7 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 #Recensioni totali estratte
 tot_reviews = 0
 page = 0
-max_reviews = 20
+max_reviews = 10
 #Apertura foglio excel
 wb = Workbook()
 ws = wb.active
@@ -43,7 +43,7 @@ def analisi(query="",url=""):
     searchFiled.send_keys(query)
     sleep(5)
     page = 1
-    while tot_reviews <= max_reviews:
+    while tot_reviews < max_reviews:
 
         reviews = None
         title = None
@@ -62,24 +62,18 @@ def analisi(query="",url=""):
 
             offSet = 0
 
-            # for l in link:
-            #     print(l.get_attribute('href'))
-
             for i in range(0,len(title)):
-                # print(title[i].text)
-                # print(decription[i].text)
-                # print(date[i].text)
-                # print(link[offSet+1].get_attribute('href'))
-                # print("\n")
-                ws.append((title[i].text, decription[i].text , date[i].text, link[offSet+1].get_attribute('href')))
+
+                ws.append((title[i].text, decription[i].text , date[i].text[0:9], link[offSet+1].get_attribute('href')))
                 tot_reviews += 1
                 wb.save('Tripadvisor.xlsx')
                 offSet+=2
 
             print("Pagina:",page," | ","Recensioni trovate: " + str(tot_reviews)+" | " + "Recensioni salvate: " + str(tot_reviews))
 
-            if(tot_reviews <= max_reviews):
-                elem = driver.find_element(By.CLASS_NAME, 'UCacc')
+            if(tot_reviews < max_reviews):
+                elem = driver.find_elements(By.CLASS_NAME, 'UCacc')
+                elem = elem[len(elem)-1]
                 try:
                     elem.click()
                     page+=1
@@ -94,7 +88,7 @@ def analisi(query="",url=""):
 # Funzione utilizzata nel caso lo script venga interrotto con CTRL+C.
 def save(name="Tripadvisor"):
     global tot_reviews,wb,driver
-    print("Scraping interrotto \n" + str(tot_reviews) + " recensioni salvate \nAttendere terminazione script.")
+    print(str(tot_reviews) + " recensioni salvate \nAttendere terminazione script.")
     wb.save(name+'.xlsx')
     driver.quit()
 
