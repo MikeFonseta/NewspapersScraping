@@ -43,14 +43,14 @@ options.add_experimental_option('excludeSwitches', ['enable-logging'])
 driver = webdriver.Edge(service=Service(EdgeChromiumDriverManager().install()),options=options)
 
 
-def analisi(query="",url=""):
+def analisi(query="",url="", language="Italiano"):
     global tot_reviews,wb,ws,driver,page
     
     page = 0
 
     #Caricamento pagina
     driver.get(url)
-    print(driver.find_element(By.CLASS_NAME, 'biGQs._P.fiohW.eIegw').text)
+    titlePage = driver.find_element(By.CLASS_NAME, 'biGQs._P.fiohW.eIegw').text
     #Ricerca
 
     WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, 'onetrust-accept-btn-handler'))).click()
@@ -58,6 +58,25 @@ def analisi(query="",url=""):
     searchFiled = driver.find_element(By.CLASS_NAME,'UfnDM.z.w.aThUm.IiSKr')
     searchFiled.send_keys(query)
     sleep(5)
+
+    WebDriverWait(driver, 10).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'OKHdJ.z.Pc.PQ.Pp.PD.W._S.Gn.Z.B2.BF._M.PQFNM.wSSLS')))[1].click()
+    
+    sleep(1)
+
+    languages = driver.find_element(By.CLASS_NAME, 'IIbRQ._g.z').find_elements(By.CLASS_NAME, 'whtrm._G.z.u.Pi.PW.Pv.PI._S.Wh.Wc.B-.iRKoF')
+    
+    for languageChoice in languages: 
+        try:
+            if language in languageChoice.text:
+                languageChoice.click()
+                contains = " che contengono " + '"'+ query + '"'
+                if not query: 
+                    print("Cerco recensioni di " + titlePage + " in lingua " + language)
+                else:
+                    print("Cerco recensioni di " + titlePage + " in lingua " + language + contains)
+        except:
+            pass
+    
     page = 1
     while tot_reviews < max_reviews:
 
@@ -127,7 +146,7 @@ def save(name="Tripadvisor"):
 try:
     #Signal per identificare quando lo script viene fermato con CTRL+C
     signal.signal(signal.SIGINT, signal.default_int_handler)
-    analisi(query="Napoli ", url="https://www.tripadvisor.it/Attraction_Review-g187785-d3171016-Reviews-Napoli_Sotterranea-Naples_Province_of_Naples_Campania.html")
+    analisi(query="Napoli ", language="Inglese",url="https://www.tripadvisor.it/Attraction_Review-g187785-d3171016-Reviews-Napoli_Sotterranea-Naples_Province_of_Naples_Campania.html")
     driver.quit()
 except KeyboardInterrupt:
     os._exit(0)
