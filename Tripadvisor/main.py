@@ -27,7 +27,7 @@ mesi = {'gen': '01',
 
 #Recensioni totali estratte
 tot_reviews = 0
-max_reviews = 50
+max_reviews = 1000
 #Apertura foglio excel
 wb = Workbook()
 ws = wb.active
@@ -90,11 +90,11 @@ def analisi(query="",url="", language="Italiano"):
 
         if(reviews is not None):
             
-            title = WebDriverWait(reviews, 15).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'biGQs._P.fiohW.qWPrE.ncFvv.fOtGX')))
-            decription = WebDriverWait(reviews, 15).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'_T.FKffI')))
-            date = WebDriverWait(reviews, 15).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'RpeCd')))
-            link = WebDriverWait(reviews, 15).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'BMQDV._F.G-.wSSLS.SwZTJ.FGwzt.ukgoS')))
-            starsList = WebDriverWait(reviews, 15).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'UctUV.d.H0')))
+            title = WebDriverWait(reviews, 5).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'biGQs._P.fiohW.qWPrE.ncFvv.fOtGX')))
+            decription = WebDriverWait(reviews, 5).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'_T.FKffI')))
+            date = WebDriverWait(reviews, 5).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'RpeCd')))
+            link = WebDriverWait(reviews, 5).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'BMQDV._F.G-.wSSLS.SwZTJ.FGwzt.ukgoS')))
+            starsList = WebDriverWait(reviews, 5).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'UctUV.d.H0')))
 
 
             offSet = 0
@@ -112,9 +112,12 @@ def analisi(query="",url="", language="Italiano"):
                     starText = str(starValue) + " stelle" 
                 else: 
                     starText = str(starValue) + " stella"
-
-                ws.append((title[i].text, decription[i].text , "01/"+mesi[date[i].text[:3]]+"/"+date[i].text[4:9], link[offSet+1].get_attribute('href'), starText))
-                tot_reviews += 1
+                try:
+                    ws.append((title[i].text, decription[i].text , "01/"+mesi[date[i].text[:3]]+"/"+date[i].text[4:9], link[offSet+1].get_attribute('href'), starText))
+                    tot_reviews += 1
+                except:
+                    ws.append(('Errore','Errore','Errore','Errore','Errore'))
+                
                 wb.save('Tripadvisor.xlsx')
                 offSet+=2
 
@@ -146,7 +149,7 @@ def save(name="Tripadvisor"):
 try:
     #Signal per identificare quando lo script viene fermato con CTRL+C
     signal.signal(signal.SIGINT, signal.default_int_handler)
-    analisi(query="Napoli ", language="Inglese",url="https://www.tripadvisor.it/Attraction_Review-g187785-d3171016-Reviews-Napoli_Sotterranea-Naples_Province_of_Naples_Campania.html")
+    analisi(query="Florence ", language="Inglese",url="https://www.tripadvisor.it/Attraction_Review-g187895-d191153-Reviews-Gallerie_Degli_Uffizi-Florence_Tuscany.html")
     driver.quit()
 except KeyboardInterrupt:
     os._exit(0)
