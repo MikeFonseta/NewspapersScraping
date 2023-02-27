@@ -11,7 +11,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
-
 #Numero di pagine    Inserire -1 per non mettere nessun limite
 max_page = -1
 #Pagina corrente
@@ -58,7 +57,7 @@ def analisi():
         height = driver.execute_script("return document.body.scrollHeight")
         for scrol in range(100,height,100):
             driver.execute_script(f"window.scrollTo(0,{scrol})")
-            sleep(0.75)
+            sleep(0.25)
 
         if(current_page >= starting_page):
     
@@ -72,8 +71,27 @@ def analisi():
                 driver.execute_script("arguments[0].scrollIntoView();", article)
                 title = article.find_element(By.CLASS_NAME, value="aprev-title")
                 date = article.find_element(By.CLASS_NAME, value="meta-part.time")
+                link = title.find_element(By.CSS_SELECTOR, value='a').get_attribute('href')
+                text = ""
                 sleep(0.75)
-                ws.append((title.text, date.get_attribute('datetime'), title.find_element(By.CSS_SELECTOR, value='a').get_attribute('href')))
+
+                if(link):
+                    try:
+                        if (link):
+                            main_window = driver.current_window_handle
+                            driver.execute_script("window.open('"+link+"', 'new_window')")
+                            driver.switch_to.window(driver.window_handles[1])
+                            sleep(1)
+                            ps = driver.find_elements(By.CLASS_NAME, 'atext')
+                            for p in ps:
+                                text += p.text
+                            driver.close()
+                            sleep(1)
+                            driver.switch_to.window(main_window)
+                    except:
+                        text = "Error"
+
+                ws.append((title.text, date.get_attribute('datetime'), link, text))
                 tot_articles+=1
                 wb.save('Scraping.xlsx')
 
