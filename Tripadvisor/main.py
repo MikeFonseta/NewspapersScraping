@@ -2,6 +2,7 @@ from time import sleep
 import signal
 import os
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.edge.service import Service
 from selenium import webdriver
 from selenium.webdriver.edge.options import Options as EdgeOptions
@@ -9,7 +10,7 @@ from openpyxl import Workbook
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-
+from selenium.common.exceptions import TimeoutException 
 
 mesi = {'gen': '01',
         'feb': '02',
@@ -43,25 +44,46 @@ options.add_experimental_option('excludeSwitches', ['enable-logging'])
 driver = webdriver.Edge(service=Service(EdgeChromiumDriverManager().install()),options=options)
 
 
-def analisi(query="",url="", language="Italiano"):
+def analisi(query="",url="", language="Italiano", mese=None):
     global tot_reviews,wb,ws,driver,page
     
     page = 0
 
     #Caricamento pagina
     driver.get(url)
-    titlePage = driver.find_element(By.CLASS_NAME, 'biGQs._P.fiohW.eIegw').text
+
+    captcha = 0
+
+    while captcha is not None:
+        try:
+            print("Controllo presenza captcha...")
+            captcha = WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH,"/html/body/iframe"))).get_attribute("src")
+            if("https://geo.captcha-delivery.com/captcha" in captcha):
+                print("Captcha rilevato... Apro nuova sessione")
+                raise Exception("Captcha rilevato... Apro nuova sessione")
+        except TimeoutException:
+            captcha = None
+        except Exception:
+            driver.close()
+            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+            driver.get(url)
+
+    titlePage = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CLASS_NAME, 'biGQs._P.fiohW.eIegw'))).text
     #Ricerca
 
     WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, 'onetrust-accept-btn-handler'))).click()
 
-    searchFiled = driver.find_element(By.CLASS_NAME,'UfnDM.z.w.aThUm.IiSKr')
+    searchFiled = driver.find_element(By.CLASS_NAME,'UfnDM.w.Q')
     searchFiled.send_keys(query)
-    sleep(5)
-
-    WebDriverWait(driver, 10).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'OKHdJ.z.Pc.PQ.Pp.PD.W._S.Gn.Z.B2.BF._M.PQFNM.wSSLS')))[1].click()
+    
+    #sleep(5)
+    WebDriverWait(driver, 10).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'OKHdJ.z.Pc.PQ.Pp.PD.W._S.Gn.Rd._M.PQFNM.wSSLS')))[1].click()
     
     sleep(1)
+ 
+    if mese != None :
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CLASS_NAME, 'OKHdJ.z.Pc.PQ.Pp.PD.W._S.Gn.Rd._M.hzzSG.PQFNM.wSSLS'))).click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'OKHdJ.z.Pc.PQ.Pp.PD.W._S.Gn.Rd._M.xARtZ.uPlAb.hzzSG.PQFNM.wSSLS')))[mese-1].click()
 
     languages = driver.find_element(By.CLASS_NAME, 'IIbRQ._g.z').find_elements(By.CLASS_NAME, 'whtrm._G.z.u.Pi.PW.Pv.PI._S.Wh.Wc.B-.iRKoF')
     
@@ -93,7 +115,7 @@ def analisi(query="",url="", language="Italiano"):
             title = WebDriverWait(reviews, 5).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'biGQs._P.fiohW.qWPrE.ncFvv.fOtGX')))
             decription = WebDriverWait(reviews, 5).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'_T.FKffI')))
             date = WebDriverWait(reviews, 5).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'RpeCd')))
-            link = WebDriverWait(reviews, 5).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'BMQDV._F.G-.wSSLS.SwZTJ.FGwzt.ukgoS')))
+            link = WebDriverWait(reviews, 5).until(EC.visibility_of_all_elements_located((By.CLASS_NAME,'BMQDV._F.Gv.wSSLS.SwZTJ.FGwzt.ukgoS')))
             starsList = WebDriverWait(reviews, 5).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'UctUV.d.H0')))
 
 
@@ -149,7 +171,7 @@ def save(name="Tripadvisor"):
 try:
     #Signal per identificare quando lo script viene fermato con CTRL+C
     signal.signal(signal.SIGINT, signal.default_int_handler)
-    analisi(query="Florence ", language="Inglese",url="https://www.tripadvisor.it/Attraction_Review-g187895-d191153-Reviews-Gallerie_Degli_Uffizi-Florence_Tuscany.html")
+    analisi(query="Florence ", language="Inglese",url="https://www.tripadvisor.it/Attraction_Review-g187895-d191153-Reviews-Gallerie_Degli_Uffizi-Florence_Tuscany.html", mese=2)
     driver.quit()
 except KeyboardInterrupt:
     os._exit(0)
