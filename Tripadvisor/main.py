@@ -52,6 +52,7 @@ def analisi(query="",url="", language="Italiano", mese=None):
     #Caricamento pagina
     driver.get(url)
 
+    sleep(10)
     captcha = 0
 
     while captcha is not None:
@@ -83,7 +84,9 @@ def analisi(query="",url="", language="Italiano", mese=None):
  
     if mese != None :
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CLASS_NAME, 'OKHdJ.z.Pc.PQ.Pp.PD.W._S.Gn.Rd._M.hzzSG.PQFNM.wSSLS'))).click()
-        WebDriverWait(driver, 10).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'OKHdJ.z.Pc.PQ.Pp.PD.W._S.Gn.Rd._M.xARtZ.uPlAb.hzzSG.PQFNM.wSSLS')))[mese-1].click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_all_elements_located((By.CLASS_NAME, 'OKHdJ.z.Pc.PQ.Pp.PD.W._S.Gn.Rd._M.xARtZ.uPlAb.hzzSG.PQFNM.wSSLS')))[mese-1+5].click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CLASS_NAME, 'rmyCe._G.B-.z._S.c.Wc.wSSLS.AeLHi.sOtnj'))).click()
+        
 
     languages = driver.find_element(By.CLASS_NAME, 'IIbRQ._g.z').find_elements(By.CLASS_NAME, 'whtrm._G.z.u.Pi.PW.Pv.PI._S.Wh.Wc.B-.iRKoF')
     
